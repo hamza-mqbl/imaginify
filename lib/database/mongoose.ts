@@ -1,5 +1,4 @@
 import mongoose, { Mongoose } from "mongoose";
-import { cache } from "react";
 const MONGODB_URL = process.env.MONGDB_URL;
 interface MongooseConnection {
   conn: Mongoose | null;
