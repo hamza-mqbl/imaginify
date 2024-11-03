@@ -7,19 +7,25 @@ import User from "../database/models/user.model";
 import { connectToDatabase } from "../database/mongoose";
 import { handleError } from "../utils";
 
-// CREATE
 export async function createUser(user: CreateUserParams) {
+  console.log("Creating user:", user); // Log the user details
+
   try {
+    // Connect to the database
     await connectToDatabase();
 
+    // Create a new user in the database
     const newUser = await User.create(user);
-    console.log("🚀 ~ createUser ~ User:", User)
+    console.log("🚀 ~ createUser ~ User:", newUser); // Log the newly created user object
+
+    // Return the newly created user object as a plain JSON
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
-    handleError(error);
+    console.error("Error creating user:", error); // Log the error details
+    handleError(error); // Handle the error according to your application logic
+    throw new Error("Failed to create user."); // Optionally re-throw the error for further handling
   }
 }
-
 // READ
 export async function getUserById(userId: string) {
   try {
