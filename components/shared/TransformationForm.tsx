@@ -30,8 +30,10 @@ import {
 import { CustomField } from "./CustomField";
 import { useState, useTransition } from "react";
 import { AspectRatioKey, debounce, deepMergeObjects } from "@/lib/utils";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+
 import { updateCredits } from "@/lib/actions/user.action";
+import MediaUploader from "./MediaUploader";
 
 export const formSchema = z.object({
   //   username: z.string().min(2).max(50),
@@ -80,13 +82,13 @@ const TransformationForm = ({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
 
-    if(data || image) {
+    if (data || image) {
       const transformationUrl = getCldImageUrl({
         width: image?.width,
         height: image?.height,
         src: image?.publicId,
-        ...transformationConfig
-      })
+        ...transformationConfig,
+      });
 
       const imageData = {
         title: values.title,
@@ -100,39 +102,39 @@ const TransformationForm = ({
         aspectRatio: values.aspectRatio,
         prompt: values.prompt,
         color: values.color,
-      }
+      };
 
-      if(action === 'Add') {
+      if (action === "Add") {
         try {
           const newImage = await addImage({
             image: imageData,
             userId,
-            path: '/'
-          })
+            path: "/",
+          });
 
-          if(newImage) {
-            form.reset()
-            setImage(data)
-            router.push(`/transformations/${newImage._id}`)
+          if (newImage) {
+            form.reset();
+            setImage(data);
+            router.push(`/transformations/${newImage._id}`);
           }
         } catch (error) {
           console.log(error);
         }
       }
 
-      if(action === 'Update') {
+      if (action === "Update") {
         try {
           const updatedImage = await updateImage({
             image: {
               ...imageData,
-              _id: data._id
+              _id: data._id,
             },
             userId,
-            path: `/transformations/${data._id}`
-          })
+            path: `/transformations/${data._id}`,
+          });
 
-          if(updatedImage) {
-            router.push(`/transformations/${updatedImage._id}`)
+          if (updatedImage) {
+            router.push(`/transformations/${updatedImage._id}`);
           }
         } catch (error) {
           console.log(error);
@@ -140,7 +142,7 @@ const TransformationForm = ({
       }
     }
 
-    setIsSubmitting(false)
+    setIsSubmitting(false);
   }
   const onSelectFieldHandler = (
     value: string,
@@ -178,18 +180,18 @@ const TransformationForm = ({
     return onChangeField(value);
   };
   const onTransformHandler = async () => {
-    setIsTransforming(true)
+    setIsTransforming(true);
 
     setTransformationConfig(
       deepMergeObjects(newTransformation, transformationConfig)
-    )
+    );
 
-    setNewTransformation(null)
+    setNewTransformation(null);
 
     startTransition(async () => {
-    //   await updateCredits(userId, creditFee)
-    })
-  }
+      //   await updateCredits(userId, creditFee)
+    });
+  };
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -272,23 +274,40 @@ const TransformationForm = ({
               )}
             </div>
           )}
+          <div className="media-uploader-field">
+            <CustomField
+              control={form.control}
+              name="publicId"
+              className=" flex size-full flex-col"
+              render={({ field }) => (
+                <MediaUploader
+                  onValueChange={field.onChange}
+                  setImage={setImage}
+                  publicId={field.value}
+                  image={image}
+                  type={type}
+                />
+              )}
+            />
+          </div>
+
           <div className="flex flex-col gap-4">
-          <Button 
-            type="button"
-            className="submit-button capitalize"
-            disabled={isTransforming || newTransformation === null}
-            onClick={onTransformHandler}
-          >
-            {isTransforming ? 'Transforming...' : 'Apply Transformation'}
-          </Button>
-          <Button 
-            type="submit"
-            className="submit-button capitalize"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Submitting...' : 'Save Image'}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              className="submit-button capitalize"
+              disabled={isTransforming || newTransformation === null}
+              onClick={onTransformHandler}
+            >
+              {isTransforming ? "Transforming..." : "Apply Transformation"}
+            </Button>
+            <Button
+              type="submit"
+              className="submit-button capitalize"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Save Image"}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>
